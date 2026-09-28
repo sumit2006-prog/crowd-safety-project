@@ -1,0 +1,24 @@
+{
+  "name": "crowd-safe",
+  "version": "1.0.0",
+  "description": "Real-Time Safety & Emergency Coordination for Large Public Gatherings",
+  "main": "server/server.js",
+  "scripts": {
+    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "seed": "cd server && node seed.js",
+    "build": "cd client && npm run build"
+  },
+  "keywords": [
+    "crowd-safety",
+    "emergency-response",
+    "real-time",
+    "leaflet",
+    "socket.io",
+    "react",
+    "node"
+  ],
+  "author": "CROWD SAFE Team",
+  "license": "MIT"
+}
