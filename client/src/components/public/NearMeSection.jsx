@@ -22,7 +22,6 @@ export const NearMeSection = () => {
           setIsLocating(false);
         },
         () => {
-          // Fallback demo location if denied
           setUserCoords({ lat: event.centerLat, lng: event.centerLng });
           setIsLocating(false);
         },
@@ -168,6 +167,14 @@ export const NearMeSection = () => {
             </div>
           </div>
         ))}
+
+        {filteredServices.length === 0 && (
+          <div className="col-span-full bg-slate-900 border border-slate-800 p-8 rounded-3xl text-center space-y-2 text-slate-400">
+            <Search className="w-8 h-8 text-rose-500 mx-auto opacity-50" />
+            <p className="text-sm font-bold text-white">No services found for this category</p>
+            <p className="text-xs">Try selecting 'ALL' to view all nearby help stations.</p>
+          </div>
+        )}
       </div>
     </div>
   );

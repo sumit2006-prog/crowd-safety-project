@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Circle, Polygon, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { Phone, Navigation, Shield, Flame, Stethoscope, AlertTriangle, Users, Compass, Eye, Filter, CheckCircle } from 'lucide-react';
 import { useEventData } from '../../context/EventDataContext';
+import { useAuth } from '../../context/AuthContext';
 
 // Helper Map Controller to recenter map smoothly
 function MapRecenter({ center, zoom }) {
@@ -46,7 +47,8 @@ const createCustomIcon = (colorHex, iconSymbol, label = '') => {
 };
 
 export const LiveMap = ({ fullScreen = true, filterCategory = 'ALL', onSelectFacility }) => {
-  const { event, facilities, exits, incidents, responders, zones, alerts } = useEventData();
+  const { event, facilities, exits, incidents, responders, zones } = useEventData();
+  const { isAdmin } = useAuth();
   const [mapCenter, setMapCenter] = useState([event.centerLat || 12.9716, event.centerLng || 77.5946]);
   const [userLocation, setUserLocation] = useState(null);
   const [activeFilter, setActiveFilter] = useState(filterCategory);
@@ -62,12 +64,16 @@ export const LiveMap = ({ fullScreen = true, filterCategory = 'ALL', onSelectFac
           setMapCenter(loc);
         },
         () => {
-          // Fallback to event center if permission denied
           setMapCenter([event.centerLat, event.centerLng]);
         }
       );
     }
   };
+
+  const openExits = exits.filter(e => e.status === 'OPEN');
+  const recommendedGate = openExits.length > 0
+    ? openExits.sort((a, b) => a.currentCrowd - b.currentCrowd)[0]
+    : null;
 
   const getMarkerColor = (type, severity, status) => {
     if (status === 'BLOCKED' || severity === 'CRITICAL') return '#ef4444'; // RED
@@ -166,6 +172,22 @@ export const LiveMap = ({ fullScreen = true, filterCategory = 'ALL', onSelectFac
               <div className="p-2 text-center font-bold text-sky-400">Your Current Geolocation</div>
             </Popup>
           </Marker>
+        )}
+
+        {/* Safe Evacuation Route Polyline visualization */}
+        {recommendedGate && (
+          <Polyline
+            positions={[
+              userLocation || [event.centerLat, event.centerLng],
+              [recommendedGate.lat, recommendedGate.lng]
+            ]}
+            pathOptions={{
+              color: '#10b981',
+              weight: 4,
+              dashArray: '8, 8',
+              opacity: 0.9
+            }}
+          />
         )}
 
         {/* Crowd Density Zones / Heatmap circles */}
@@ -295,7 +317,7 @@ export const LiveMap = ({ fullScreen = true, filterCategory = 'ALL', onSelectFac
           );
         })}
 
-        {/* Responder Tracking Markers */}
+        {/* Responder Tracking Markers - Privacy Filtered for Visitors */}
         {responders.map(resp => (
           <Marker
             key={resp.responderId}
@@ -304,9 +326,10 @@ export const LiveMap = ({ fullScreen = true, filterCategory = 'ALL', onSelectFac
           >
             <Popup>
               <div className="p-2 text-xs space-y-1">
-                <div className="font-bold text-sky-400">{resp.name} ({resp.team})</div>
+                <div className="font-bold text-sky-400">{isAdmin ? resp.name : resp.team} ({resp.type} Response)</div>
                 <div className="text-slate-300">Status: <strong className="text-white">{resp.status}</strong></div>
-                {resp.currentAssignment && <div className="text-rose-400">Assigned: {resp.currentAssignment}</div>}
+                {isAdmin && resp.phone && <div className="text-slate-400">Phone: {resp.phone}</div>}
+                {resp.currentAssignment && <div className="text-rose-400 font-bold">Assigned: {resp.currentAssignment}</div>}
               </div>
             </Popup>
           </Marker>

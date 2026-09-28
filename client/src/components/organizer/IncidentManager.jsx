@@ -105,11 +105,11 @@ export const IncidentManager = () => {
                 )}
 
                 {inc.verificationStatus === 'VERIFIED' && inc.status !== 'Resolved' && (
-                  <div className="flex items-center gap-2 w-full md:w-auto">
+                  <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
                     <select
                       value={selectedResponder[inc.incidentId] || ''}
                       onChange={(e) => setSelectedResponder({ ...selectedResponder, [inc.incidentId]: e.target.value })}
-                      className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200"
+                      className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 outline-none"
                     >
                       <option value="">Select Available Responder...</option>
                       {responders.filter(r => r.status === 'AVAILABLE').map(r => (
@@ -139,6 +139,14 @@ export const IncidentManager = () => {
             </div>
           </div>
         ))}
+
+        {filteredIncidents.length === 0 && (
+          <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl text-center space-y-2 text-slate-400">
+            <CheckCircle className="w-8 h-8 text-emerald-400 mx-auto opacity-50" />
+            <p className="text-sm font-bold text-white">No incidents in this queue</p>
+            <p className="text-xs">All reports in this category have been processed or resolved.</p>
+          </div>
+        )}
       </div>
     </div>
   );
